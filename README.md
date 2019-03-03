@@ -1,5 +1,5 @@
 # Naive Parallel Mean Filter & Edge detector
-This is a naive parallel mean filter and edge detector implemented in R
+This is naive parallel mean filter and edge detector implemented in R
 
 ## Guideline
 - Read the file "mean_filter.html" to understand the main purpose and details of parallel mean filter
