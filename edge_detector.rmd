@@ -1,0 +1,135 @@
+# Edge detector
+
+Author: Lingfeng Zhu
+
+Email: jolin.windy072@gmail.com
+
+## 1: The detect_edge function
+
+Do basic edge detection. The detect_edge function find the edge and change the image by using the value 1 in each color channel, which makes the edge pixels white:
+
+```{r}
+detect_edge = function(X_list, k = 1, top = "10%", color = "red") { 
+  # X_list is the list matrices and k is the size of the window, 
+  # top is the threshold, color is the color channel I choose
+  if (color == "red") X = X_list$red
+  else if (color == "green") X = X_list$green
+  else if (color == "blue") X = X_list$blue
+  n = dim(X)[1]
+  m = dim(X)[2]
+  pad_matrix = matrix(0, n+2*k, m+2*k)
+  pad_matrix[(k+1):(n+k), (k+1):(m+k)] = X
+  
+  detect = matrix(NA, nrow = n, ncol = m)
+  for (i in (k+1):(n+k)) {
+    for (j in (k+1):(m+k)) {
+      moving_matrix = pad_matrix[(i-k):(i+k), (j-k):(j+k)]
+      detect[(i-k),(j-k)] = sd(moving_matrix)
+    }
+  }
+  if (top == "10%") cutoff = quantile(detect, probs = 0.9)
+  else if (top == "1%") cutoff = quantile(detect, probs = 0.99)
+  
+  X_list$red[detect >= cutoff] = 1
+  X_list$green[detect >= cutoff] = 1
+  X_list$blue[detect >= cutoff] = 1
+  return(X_list)
+}
+```
+
+## 2: Find edges in the Van Gogh painting
+
+### 2.1. Find the edges in the Van Gogh painting using the function I just implemented: (Use red channel)
+
+```{r, fig.width=12, fig.height=4}
+if (!require("png")) {
+  install.packages("png")
+  stopifnot(require("png"))
+}
+
+vg = readPNG("Van_Gogh.png")
+
+red.vg = vg[,,1]
+green.vg = vg[,,2]
+blue.vg = vg[,,3]
+
+vg_list = list()
+vg_list$red = red.vg
+vg_list$green = green.vg
+vg_list$blue = blue.vg
+
+vg_edge = detect_edge(vg_list, k = 1, top = "10%", color = "red")
+
+
+layout(matrix(1:3, ncol=3))
+image(t(vg_edge$red[nrow(vg_edge$red):1,]), col = gray((1:12)/13), main="Edge of Red channel")
+image(t(vg_edge$green[nrow(vg_edge$green):1,]), col = gray((1:12)/13), main="Edge of Green channel")
+image(t(vg_edge$blue[nrow(vg_edge$blue):1,]), col = gray((1:12)/13), main="Edge of Blue channel")
+```
+
+### 2.2 Save the Image
+
+```{r}
+n = dim(vg_list$red)[1]
+m = dim(vg_list$red)[2]
+vg_edge_array = array(c(vg_edge$red, vg_edge$green, vg_edge$blue), dim = c(n, m, 3))
+
+# save the images
+writePNG(vg_edge_array, "vg_edge.png")
+```
+
+### Here is the result:
+
+#### Edge of Van Gogh from Red channel:
+
+![Edge of Van Gogh from Red channel](vg_edge.png)
+
+## 3: Find edges in the Madison photo
+
+### 3.1. Find the edges in the Madison photo using the function I just implemented: (Use all the three channels once a time)
+
+```{r}
+md = readPNG("Madison.png")
+
+red.md = md[,,1]
+green.md = md[,,2]
+blue.md = md[,,3]
+
+md_list = list()
+md_list$red = red.md
+md_list$green = green.md
+md_list$blue = blue.md
+
+md_edge_red = detect_edge(md_list, k = 1, top = "10%", color = "red") # edge from red chnnel
+md_edge_green = detect_edge(md_list, k = 1, top = "10%", color = "green") # edge from gren chnnel
+md_edge_blue = detect_edge(md_list, k = 1, top = "10%", color = "blue") #  # edge from blue chnnel
+```
+
+### 3.2 Save the Images
+
+```{r}
+n = dim(md_list$red)[1]
+m = dim(md_list$red)[2]
+md_edge_red_array = array(c(md_edge_red$red, md_edge_red$green, md_edge_red$blue), dim = c(n, m, 3))
+md_edge_green_array = array(c(md_edge_green$red, md_edge_green$green, md_edge_green$blue), dim = c(n, m, 3))
+md_edge_blue_array = array(c(md_edge_blue$red, md_edge_blue$green, md_edge_blue$blue), dim = c(n, m, 3))
+
+# save the images
+writePNG(md_edge_red_array, "md_edge_red.png")
+writePNG(md_edge_green_array, "md_edge_green.png")
+writePNG(md_edge_blue_array, "md_edge_blue.png")
+```
+
+### Here is the result:
+
+#### Edge of Madison from Red channel:
+
+![Edge of Madison form Red channel](md_edge_red.png)
+
+#### Edge of Madison from Green channel:
+
+![Edge of Madison form Green channel](md_edge_green.png)
+
+#### Edge of Madison from Blue channel:
+
+![Edge of Madison form Blue channel](md_edge_blue.png)
