@@ -12,3 +12,6 @@ There are two images uploaded as examples:
 
 ## Acknowledgement
 Prof.Yongsu Li's instruction, UW-Madison
+
+## Email
+jolin.windy072@gmail.com
